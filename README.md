@@ -115,7 +115,8 @@
 ```text
 ├── core/                                   # Конфигурация приложения (чтение .env)
 │   ├── __init__.py
-│   └── config.py                           # ConfigSetting (Pydantic BaseSettings)
+│   ├── config.py.                          # ConfigSetting (Pydantic BaseSettings)
+│   └── logger.py                           # Настройка логирования
 ├── database/                               # Подключение к БД и ORM-модели
 │   ├── __init__.py
 │   ├── base.py                             # AsyncEngine, Base, SessionLocal, get_db
