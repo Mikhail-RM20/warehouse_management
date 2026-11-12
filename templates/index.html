@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheckStock — Где сейчас товар?</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 32px 16px;
+            font-size: 15px;
+            color: #f8fafc;
+
+            background-image:
+                linear-gradient(
+                    rgba(2, 6, 23, 0.55),
+                    rgba(2, 6, 23, 0.75)
+                ),
+                url("/images/i.jpg");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0 0 6px;
+            font-size: 34px;
+            font-weight: 800;
+            text-shadow: 0 3px 16px rgba(0, 0, 0, 0.55);
+        }
+
+        small {
+            color: rgba(248, 250, 252, 0.82);
+        }
+
+        article {
+            background: rgba(15, 23, 42, 0.62);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
+            backdrop-filter: blur(16px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 18px;
+            padding: 22px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 50px rgba(2, 6, 23, 0.35);
+        }
+
+        h3,
+        h4 {
+            margin: 0 0 16px;
+            color: #f8fafc;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+
+        .grid article {
+            margin-bottom: 0;
+        }
+
+        .alert-error {
+            background: rgba(127, 29, 29, 0.72);
+            color: #fecaca;
+            border: 1px solid rgba(248, 113, 113, 0.55);
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            font-weight: 600;
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+
+        .badge-deleted {
+            background: rgba(254, 243, 199, 0.9);
+            color: #92400e;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-left: 6px;
+        }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.22);
+            color: #bae6fd;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table th,
+        table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        table th {
+            color: rgba(248, 250, 252, 0.75);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .overflow-auto {
+            overflow-x: auto;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(248, 250, 252, 0.82);
+        }
+
+        select,
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: rgba(56, 189, 248, 0.7);
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        select option {
+            color: #0f172a;
+        }
+
+        button {
+            padding: 10px 16px;
+            border: 1px solid rgba(56, 189, 248, 0.5);
+            border-radius: 10px;
+            background: rgba(56, 189, 248, 0.18);
+            color: #e0f2fe;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background: rgba(56, 189, 248, 0.3);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button.secondary {
+            border-color: rgba(248, 113, 113, 0.5);
+            background: rgba(248, 113, 113, 0.16);
+            color: #fecaca;
+        }
+
+        button.secondary:hover {
+            background: rgba(248, 113, 113, 0.3);
+        }
+
+        .actions-inline {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .actions-inline form {
+            margin: 0;
+        }
+
+        .actions-inline button {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        .warehouse-form {
+            max-width: 420px;
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 16px 10px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            article {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <header>
+            <h1>CheckStock — Где сейчас товар?</h1>
+            <small>
+                Учёт остатков на складах ФФ, в резерве FBS и в пути
+                (между ФФ / FBO / FBS)
+            </small>
+        </header>
+
+        {% if error %}
+        <div class="alert-error">
+            <strong>Внимание:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <article>
+            <h3>01. Остатки по артикулам и складам фулфилмента (ФФ)</h3>
+
+            <div class="overflow-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Артикул</th>
+                            <th>Товар</th>
+                            <th>Склад ФФ</th>
+                            <th>Физически на складе</th>
+                            <th>В резерве FBS</th>
+                            <th>Доступно</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for s in stocks %}
+                        <tr>
+                            <td><strong>{{ s.article }}</strong></td>
+                            <td>{{ s.product }}</td>
+                            <td>
+                                {{ s.warehouse_name }}
+
+                                {% if s.warehouse_deleted %}
+                                <span class="badge-deleted">удалён</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ s.qty_on_hand }}</td>
+                            <td>{{ s.qty_reserved_fbs }}</td>
+                            <td><strong>{{ s.qty_available }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article>
+            <h3>
+                02. Активные резервы FBS и товары в пути
+                (между ФФ / FBO / FBS)
+            </h3>
+
+            {% if active_movements %}
+            <div class="overflow-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Направление</th>
+                            <th>Товар</th>
+                            <th>Кол-во</th>
+                            <th>Откуда</th>
+                            <th>Куда</th>
+                            <th>Статус</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for m in active_movements %}
+                        <tr>
+                            <td>#{{ m.id }}</td>
+                            <td>{{ m.type_label }}</td>
+                            <td>{{ m.article }} — {{ m.product }}</td>
+                            <td><strong>{{ m.qty }}</strong></td>
+                            <td>{{ m.from_label }}</td>
+                            <td>{{ m.to_label }}</td>
+                            <td>
+                                <span class="badge-status">
+                                    {{ m.status_label }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="actions-inline">
+                                    {% if m.movement_type == "TRANSFER" and m.status == "IN_TRANSIT" %}
+                                    <form
+                                        action="/movement/transfer/receive/{{ m.id }}"
+                                        method="post"
+                                    >
+                                        <button type="submit">
+                                            Принять на ФФ
+                                        </button>
+                                    </form>
+
+                                    {% elif m.movement_type == "FBS" and m.status == "RESERVED" %}
+                                    <form
+                                        action="/movement/fbs/ship/{{ m.id }}"
+                                        method="post"
+                                    >
+                                        <button type="submit">
+                                            Отправить клиенту
+                                        </button>
+                                    </form>
+
+                                    <form
+                                        action="/movement/fbs/cancel/{{ m.id }}"
+                                        method="post"
+                                    >
+                                        <button type="submit" class="secondary">
+                                            Отменить резерв
+                                        </button>
+                                    </form>
+
+                                    {% elif m.movement_type == "FBO" and m.status == "IN_TRANSIT" %}
+                                    <form
+                                        action="/movement/fbo/receive/{{ m.id }}"
+                                        method="post"
+                                    >
+                                        <button type="submit">
+                                            Принять на МП (FBO)
+                                        </button>
+                                    </form>
+
+                                    {% elif m.movement_type == "FBS" and m.status == "IN_TRANSIT" %}
+                                    <small>Едет к клиенту</small>
+
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% else %}
+            <p><small>Сейчас нет активных резервов FBS и товаров в пути.</small></p>
+            {% endif %}
+        </article>
+
+        <div class="grid">
+            <article>
+                <h4>Приход на ФФ</h4>
+
+                <form action="/stock/inbound/" method="post">
+                    <label>
+                        Товар
+                        <select name="product_id" required>
+                            {% for p in products %}
+                            <option value="{{ p.id }}">
+                                {{ p.article }} — {{ p.product }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Склад ФФ
+                        <select name="warehouse_id" required>
+                            {% for w in active_warehouses %}
+                            <option value="{{ w.id }}">
+                                {{ w.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Количество
+                        <input
+                            type="number"
+                            name="qty"
+                            min="1"
+                            value="1"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Оформить приход
+                    </button>
+                </form>
+            </article>
+
+            <article>
+                <h4>Перемещение между ФФ</h4>
+
+                <form action="/movement/transfer/send/" method="post">
+                    <label>
+                        Товар
+                        <select name="product_id" required>
+                            {% for p in products %}
+                            <option value="{{ p.id }}">
+                                {{ p.article }} — {{ p.product }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Откуда (ФФ)
+                        <select name="from_warehouse_id" required>
+                            {% for w in active_warehouses %}
+                            <option value="{{ w.id }}">
+                                {{ w.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Куда (ФФ)
+                        <select name="to_warehouse_id" required>
+                            {% for w in active_warehouses %}
+                            <option value="{{ w.id }}">
+                                {{ w.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Количество
+                        <input
+                            type="number"
+                            name="qty"
+                            min="1"
+                            value="1"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Отправить на другой ФФ
+                    </button>
+                </form>
+            </article>
+        </div>
+
+        <div class="grid">
+            <article>
+                <h4>Заказ FBS (Резерв со склада ФФ)</h4>
+
+                <form action="/movement/fbs/reserve/" method="post">
+                    <label>
+                        Товар
+                        <select name="product_id" required>
+                            {% for p in products %}
+                            <option value="{{ p.id }}">
+                                {{ p.article }} — {{ p.product }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Склад ФФ
+                        <select name="warehouse_id" required>
+                            {% for w in active_warehouses %}
+                            <option value="{{ w.id }}">
+                                {{ w.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Количество
+                        <input
+                            type="number"
+                            name="qty"
+                            min="1"
+                            value="1"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Зарезервировать FBS
+                    </button>
+                </form>
+            </article>
+
+            <article>
+                <h4>Поставка FBO (Отправка на маркетплейс)</h4>
+
+                <form action="/movement/fbo/send/" method="post">
+                    <label>
+                        Товар
+                        <select name="product_id" required>
+                            {% for p in products %}
+                            <option value="{{ p.id }}">
+                                {{ p.article }} — {{ p.product }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Со склада ФФ
+                        <select name="warehouse_id" required>
+                            {% for w in active_warehouses %}
+                            <option value="{{ w.id }}">
+                                {{ w.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </label>
+
+                    <label>
+                        Количество
+                        <input
+                            type="number"
+                            name="qty"
+                            min="1"
+                            value="1"
+                            required
+                        >
+                    </label>
+
+                    <button type="submit">
+                        Отправить по FBO
+                    </button>
+                </form>
+            </article>
+        </div>
+
+        <article>
+            <h3>03. Управление складами фулфилмента (ФФ)</h3>
+
+            <form class="warehouse-form" action="/warehouse/add/" method="post">
+                <label>
+                    Название склада
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Например: Москва-1"
+                        required
+                    >
+                </label>
+
+                <button type="submit">
+                    Добавить склад ФФ
+                </button>
+            </form>
+
+            <div class="overflow-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название склада</th>
+                            <th>Статус</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for w in warehouses %}
+                        <tr>
+                            <td>#{{ w.id }}</td>
+                            <td>{{ w.name }}</td>
+                            <td>
+                                {% if w.is_deleted %}
+                                <span class="badge-deleted">Удалён</span>
+                                {% else %}
+                                Активен
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if not w.is_deleted %}
+                                <div class="actions-inline">
+                                    <form
+                                        action="/warehouse/rename/{{ w.id }}"
+                                        method="post"
+                                    >
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            placeholder="Новое название"
+                                            required
+                                        >
+
+                                        <button type="submit">
+                                            Переименовать
+                                        </button>
+                                    </form>
+
+                                    <form
+                                        action="/warehouse/delete/{{ w.id }}"
+                                        method="post"
+                                    >
+                                        <button type="submit" class="secondary">
+                                            Удалить
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <article>
+            <h3>04. История всех операций</h3>
+
+            <div class="overflow-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Дата и время</th>
+                            <th>Операция</th>
+                            <th>Товар</th>
+                            <th>Количество</th>
+                            <th>Откуда</th>
+                            <th>Куда</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for h in history %}
+                        <tr>
+                            <td>#{{ h.id }}</td>
+                            <td>{{ h.created_at }}</td>
+                            <td>{{ h.type_label }}</td>
+                            <td>{{ h.article }} — {{ h.product }}</td>
+                            <td>{{ h.qty }}</td>
+                            <td>{{ h.from_label }}</td>
+                            <td>{{ h.to_label }}</td>
+                            <td>{{ h.status_label }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </article>
+    </main>
+</body>
+</html>

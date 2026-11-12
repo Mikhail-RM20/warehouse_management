@@ -1,0 +1,63 @@
+[tool.ruff]
+line-length = 79
+target-version = "py312"
+
+exclude = [
+    ".venv1",
+    ".venv4",
+    ".git",
+    "__pycache__",
+    "tests"
+]
+
+fix = true
+indent-width = 4
+src = ["core", "database", "routes", "schemas", "src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N"]
+ignore = [
+    "E402",
+    "F841",
+    "E712",
+    "E501",
+    "W505"
+]
+
+fixable = ["ALL"]
+unfixable = []
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = 79
+
+[tool.mypy]
+python_version = "3.12"
+exclude = [
+    "^\\.venv1/",
+    "^\\.venv2/",
+    "^\\.venv4/",
+    "^\\.git/",
+    "^__pycache__/",
+    "^tests/",
+]
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+check_untyped_defs = true
+no_implicit_optional = true
+show_error_codes = true
+pretty = true
+disable_error_code = ["union-attr", "arg-type"]
+
+[[tool.mypy.overrides]]
+module = [
+    "sqlalchemy.*",
+    "fastapi.*",
+    "pydantic.*",
+]
+ignore_missing_imports = true
