@@ -51,9 +51,9 @@
    ```
    Содержимое `.env` для запуска в Docker:
    ```env
-   POSTGRES_USER=warehouse_manage
-   POSTGRES_PASSWORD=warehouse_password
-   POSTGRES_DB=warehouse_database
+   POSTGRES_USER=Ваш логин
+   POSTGRES_PASSWORD=Ваш пароль
+   POSTGRES_DB=Ваша БД
    POSTGRES_HOST=postgres
    POSTGRES_PORT=5432
    ```
